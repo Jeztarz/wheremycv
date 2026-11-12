@@ -27,7 +27,7 @@ export const EVENT_META: Record<EventType, { label: string; status: Status | nul
   note: { label: "โน้ต", status: null, dot: "bg-[#EEF0F3] text-[#4A5160]" },
 };
 
-export const CHANNELS = ["JobsDB", "LinkedIn", "JobThai", "อีเมล", "เว็บบริษัท", "คนรู้จัก", "อื่นๆ"];
+export const CHANNELS = ["JobsDB", "LinkedIn", "JobThai", "JobBKK", "อีเมล", "เว็บบริษัท", "คนรู้จัก", "อื่นๆ"];
 
 export function isStatus(s: unknown): s is Status {
   return typeof s === "string" && (STATUSES as readonly string[]).includes(s);
