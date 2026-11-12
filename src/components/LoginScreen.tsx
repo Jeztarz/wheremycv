@@ -68,6 +68,9 @@ export function LoginScreen({ liffId, devLogin }: { liffId: string | null; devLo
         <>
           <p className="text-lg font-semibold">ล็อกอินไม่สำเร็จ</p>
           <p className="text-sm text-ink-2">{state.message}</p>
+          <button type="button" onClick={() => window.location.reload()} className="btn-primary mt-2 h-11 text-sm">
+            ลองอีกครั้ง
+          </button>
         </>
       )}
       {state.kind === "not_allowed" && (
