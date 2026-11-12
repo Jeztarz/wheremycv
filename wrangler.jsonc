@@ -1,5 +1,5 @@
 {
-  // คนที่โคลน repo ไปใช้: แก้ database_id เป็น D1 ของตัวเอง (ดู README)
+  // คนที่โคลน repo ไปใช้: แก้ database_id เป็น D1 ของตัวเอง (ดู README) — ID นี้ไม่ใช่ความลับ ใช้ได้เฉพาะในบัญชี Cloudflare ของเจ้าของ
   // ห้ามใส่โดเมนจริงหรือ secret ในไฟล์นี้ — custom domain ตั้งใน Cloudflare dashboard, secret ใส่ด้วย `wrangler secret put`
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wheremycv",
@@ -21,7 +21,7 @@
     {
       "binding": "DB",
       "database_name": "wheremycv",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "database_id": "23ee94af-57af-4841-9024-91c8d93fcf84",
       "migrations_dir": "migrations"
     }
   ],

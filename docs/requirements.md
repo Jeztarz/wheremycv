@@ -33,7 +33,7 @@
 
 | # | ข้อบังคับ | กันอะไร |
 |---|---|---|
-| S1 | **ห้ามมี secret ใดๆ อยู่ใน repo** ค่าจริงอยู่ใน `.dev.vars` (ซึ่ง gitignore ไว้) และ `wrangler secret` เท่านั้น ใน repo มีแค่ `.dev.vars.example` ที่เป็นค่าว่าง ส่วน `wrangler.jsonc` ใช้ placeholder สำหรับ `database_id`, domain และ LIFF ID | กันไม่ให้คนโคลนได้ key ของเจ้าของไปด้วย |
+| S1 | **ห้ามมี secret ใดๆ อยู่ใน repo** ค่าจริงอยู่ใน `.dev.vars` (ซึ่ง gitignore ไว้) และ `wrangler secret` เท่านั้น ใน repo มีแค่ `.dev.vars.example` ที่เป็นค่าว่าง ส่วน `wrangler.jsonc` ห้ามมีโดเมนหรือ LIFF ID (มีได้แค่ D1 `database_id` ซึ่งไม่ใช่ความลับ ใช้ได้เฉพาะในบัญชี Cloudflare ของเจ้าของ) | กันไม่ให้คนโคลนได้ key ของเจ้าของไปด้วย |
 | S2 | **ตรวจสอบ LINE ID token ที่ฝั่งเซิร์ฟเวอร์เท่านั้น** ผ่าน `POST https://api.line.me/oauth2/v2.1/verify` โดยต้องเช็กว่า `client_id` ตรงกับ `LINE_LOGIN_CHANNEL_ID` ของเว็บนี้ **ห้ามเชื่อ userId ที่ฝั่ง client ส่งมา** (เช่นค่าจาก `liff.getProfile()`) | กันไม่ให้ใครปลอม userId หรือเอา token จาก LINE channel ของตัวเองมาใช้กับเว็บเรา |
 | S3 | **Allowlist แบบ fail-closed:** ถ้า `ALLOWED_LINE_USER_IDS` ว่าง ต้อง **ไม่มีใครเข้าได้เลย** (ห้ามตีความว่าให้ทุกคนเข้าได้) และตรวจ allowlist ทุก request ไม่ใช่แค่ตอนล็อกอิน | กันกรณีลืมตั้งค่าแล้วเว็บเปิดให้ทุกคนเข้า และกันกรณีลบใครออกจาก allowlist แล้ว session เก่ายังใช้ได้ |
 | S4 | **Session เซ็นด้วย `AUTH_SECRET` ที่แต่ละการติดตั้งสุ่มขึ้นเอง** เป็น cookie แบบ `HttpOnly`, `Secure`, `SameSite=Lax` และมีวันหมดอายุ แอปต้องไม่ยอมเริ่มทำงานถ้าไม่มี `AUTH_SECRET` หรือสั้นกว่า 32 ตัวอักษร | กันไม่ให้เอา cookie ของการติดตั้งอื่นมาใช้ หรือปลอม session ขึ้นมาเอง |
