@@ -11,16 +11,21 @@ import { listApplications, listEvents } from "@/lib/queries";
 import { computeReminders, withFreshActivity, type Reminder } from "@/lib/reminders";
 import { STATUS_META, isStatus } from "@/lib/status";
 
+// กรองตามขั้นตอน: ส่งสมัคร → ตอบกลับ → สัมภาษณ์ → Offer / ปิดแล้ว
 const FILTERS = [
   { id: "all", label: "ทั้งหมด" },
-  { id: "active", label: "กำลังลุ้น" },
+  { id: "sent", label: "ส่งสมัคร" },
+  { id: "replied", label: "ตอบกลับ" },
+  { id: "interview", label: "สัมภาษณ์" },
   { id: "offer", label: "Offer" },
   { id: "closed", label: "ปิดแล้ว" },
 ] as const;
+type Group = Exclude<(typeof FILTERS)[number]["id"], "all">;
 
-function group(status: string) {
-  if (status === "offer") return "offer";
-  return isStatus(status) && STATUS_META[status].closed ? "closed" : "active";
+function group(status: string): Group {
+  if (status === "interview" || status === "interviewed") return "interview";
+  if (status === "sent" || status === "replied" || status === "offer") return status;
+  return isStatus(status) && STATUS_META[status].closed ? "closed" : "sent";
 }
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ f?: string; q?: string }> }) {
@@ -37,7 +42,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
   const upcoming = reminders.filter((r) => r.kind === "upcoming");
   const waiting: Reminder[] = reminders.filter((r) => r.kind !== "upcoming");
 
-  const counts = { all: apps.length, active: 0, offer: 0, closed: 0 };
+  const counts: Record<Group | "all", number> = { all: apps.length, sent: 0, replied: 0, interview: 0, offer: 0, closed: 0 };
   for (const a of apps) counts[group(a.status)]++;
   const query = q.trim().toLowerCase();
   const shown = apps.filter(
