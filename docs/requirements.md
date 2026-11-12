@@ -41,6 +41,9 @@
 | S6 | ข้อมูลอยู่ใน D1 ของบัญชี Cloudflare ของแต่ละคน และ binding เข้าถึงได้เฉพาะ Worker ในบัญชีนั้น ไม่มี API เปิดให้ภายนอกอ่านข้อมูลได้ถ้าไม่ล็อกอิน | กันไม่ให้การติดตั้งอื่นเข้ามาอ่านข้อมูลข้ามกัน |
 | S7 | Endpoint ของ cron และ webhook ต้องไม่ถูกเรียกจากภายนอกได้: cron ใช้ `scheduled()` handler (ไม่มี URL ให้เรียก) และ webhook ต้องตรวจ `x-line-signature` | กันคนภายนอกสั่งยิงแจ้งเตือนเอง |
 | S8 | มีการตรวจหา secret ที่หลุดเข้า git (เช่น gitleaks ใน pre-commit หรือใน CI) และมี test ครอบ S2, S3 และ S4 | กันการพลาดในอนาคต |
+| S9 | **ห้ามมีโดเมนจริงหรือ URL ของเจ้าของอยู่ใน repo** ทั้งในโค้ด, `wrangler.jsonc`, README และตัวอย่าง ให้ใช้ `example.com` แทน URL จริงอ่านจาก env (`APP_URL`) และผูก custom domain ผ่าน Cloudflare dashboard เท่านั้น | กันไม่ให้ repo สาธารณะโยงไปถึงเว็บอื่นของเจ้าของ |
+| S10 | **Cookie แยกจากเว็บอื่นในโดเมนเดียวกัน:** session cookie ใช้ prefix `__Host-` (บังคับว่าห้ามมี `Domain`, ต้องเป็น `Secure` และ `Path=/`) จึงใช้ได้เฉพาะ subdomain นี้ ไม่แชร์กับโดเมนหลักหรือ subdomain อื่น และแอปจะอ่านเฉพาะ cookie ของตัวเอง | กันไม่ให้เว็บอื่นในโดเมนเดียวกันอ่านหรือเขียนทับ session |
+| S11 | ปิด `workers_dev` และ `preview_urls` ใน `wrangler.jsonc` ให้เข้าได้ทาง custom domain ทางเดียว | กันการเข้าผ่าน URL สำรองที่ไม่ได้ตั้งใจเปิดไว้ |
 
 **สรุป:** ทุกการติดตั้งมี LINE channel, `AUTH_SECRET` และ D1 ของตัวเอง โค้ดเหมือนกันแต่ไม่มี key ร่วมกันเลย ต่อให้คนโคลนรู้ LINE userId ของเจ้าของ ก็ทำได้แค่ใส่ใน allowlist ของเว็บตัวเอง ไม่มีผลกับเว็บของเจ้าของ
 
@@ -150,7 +153,8 @@
 | ส่วน | เทคโนโลยี |
 |---|---|
 | Frontend + Backend | **Next.js** (App Router) |
-| Hosting | **Cloudflare Workers** ผ่าน `@opennextjs/cloudflare` |
+| Hosting | **Cloudflare Workers** ผ่าน `@opennextjs/cloudflare` deploy อัตโนมัติด้วย Workers Builds เมื่อ push เข้า `main` |
+| Domain | **Custom Domain** ของ Worker เป็น subdomain ของโดเมนที่ผู้ติดตั้งมีอยู่ (เช่น `wheremycv.example.com`) ตั้งใน dashboard ไม่ใส่ใน repo (S9) |
 | Database | **Cloudflare D1** + Drizzle ORM (มี migration ให้รันใน README) |
 | Cron | Cloudflare Cron Triggers (ต้องห่อ worker ของ OpenNext ด้วย custom entry ที่มี `scheduled()` handler) |
 | LINE | LINE Login channel + LIFF + Messaging API channel |
@@ -170,7 +174,7 @@
 
 | ตัวแปร | ใช้ทำอะไร |
 |---|---|
-| `APP_URL` | URL ของเว็บหลัง deploy |
+| `APP_URL` | URL ของเว็บหลัง deploy เช่น `https://wheremycv.example.com` (ตั้งใน dashboard ไม่ commit) |
 | `AUTH_SECRET` | ใช้เซ็น session (สุ่มเอง) |
 | `ALLOWED_LINE_USER_IDS` | LINE userId ที่อนุญาต คั่นด้วย `,` |
 | `LINE_LOGIN_CHANNEL_ID` / `LINE_LOGIN_CHANNEL_SECRET` | LINE Login |

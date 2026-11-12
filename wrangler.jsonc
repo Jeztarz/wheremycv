@@ -1,0 +1,34 @@
+{
+  // คนที่โคลน repo ไปใช้: แก้ database_id เป็น D1 ของตัวเอง (ดู README)
+  // ห้ามใส่โดเมนจริงหรือ secret ในไฟล์นี้ — custom domain ตั้งใน Cloudflare dashboard, secret ใส่ด้วย `wrangler secret put`
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wheremycv",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // เข้าได้ทาง custom domain ทางเดียว (requirements S11)
+  "workers_dev": false,
+  "preview_urls": false,
+  // รันทุกชั่วโมง แล้วส่งสรุปให้ผู้ใช้ที่ตั้งเวลาตรงกับชั่วโมงนั้น (เวลาไทย)
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wheremycv",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "TZ_NAME": "Asia/Bangkok"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
