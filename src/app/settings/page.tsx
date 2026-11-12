@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { saveSettings, sendTestMessage } from "@/app/actions";
+import { IconNext } from "@/components/icons";
 import { BottomNav } from "@/components/BottomNav";
 import { SubmitButton } from "@/components/SubmitButton";
 import { TestMessageButton } from "@/components/TestMessageButton";
@@ -50,6 +52,14 @@ export default async function SettingsPage() {
         <div className="card p-4">
           <TestMessageButton send={sendTestMessage} />
         </div>
+
+        <Link href="/blacklist" className="card flex items-center justify-between px-4 py-3.5">
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[15px]">Blacklist บริษัท</span>
+            <span className="text-xs text-muted">บริษัทที่ไม่อยากสมัครอีก พร้อมเหตุผล</span>
+          </span>
+          <IconNext size={20} />
+        </Link>
 
         <section className="flex flex-col gap-1.5">
           <h2 className="px-1 text-[13px] font-semibold text-muted">บัญชี</h2>

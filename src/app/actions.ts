@@ -3,7 +3,8 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { applications, events, users } from "@/db/schema";
+import { applications, blacklist, events, users } from "@/db/schema";
+import { companyKey } from "@/lib/company";
 import { requireUser } from "@/lib/auth";
 import { addDays, isDate, isTime, todayBkk } from "@/lib/dates";
 import { db, env } from "@/lib/env";
@@ -174,4 +175,26 @@ export async function sendTestMessage(): Promise<{ ok: boolean; error?: string }
   return pushLine(env().LINE_MESSAGING_CHANNEL_ACCESS_TOKEN, user.id, [
     { type: "text", text: "✅ wheremycv ส่งแจ้งเตือนเข้า LINE ได้แล้ว" },
   ]);
+}
+
+// ---------- Blacklist ----------
+
+export async function addToBlacklist(fd: FormData) {
+  const user = await requireUser();
+  const company = str(fd, "company");
+  if (!company) throw new Error("กรอกชื่อบริษัท");
+  const key = companyKey(company) || company.toLowerCase();
+  await db()
+    .insert(blacklist)
+    .values({ id: crypto.randomUUID(), userId: user.id, company, companyKey: key, reason: str(fd, "reason", 1000) })
+    .onConflictDoUpdate({ target: [blacklist.userId, blacklist.companyKey], set: { company, reason: str(fd, "reason", 1000) } });
+  revalidatePath("/", "layout");
+  const back = str(fd, "back", 200);
+  redirect(back && back.startsWith("/") && !back.startsWith("//") ? back : "/blacklist");
+}
+
+export async function removeFromBlacklist(id: string) {
+  const user = await requireUser();
+  await db().delete(blacklist).where(and(eq(blacklist.id, id), eq(blacklist.userId, user.id)));
+  revalidatePath("/", "layout");
 }

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /** ผู้ใช้ 1 คน = LINE userId 1 อัน */
 export const users = sqliteTable("users", {
@@ -73,3 +73,21 @@ export const events = sqliteTable(
 export type User = typeof users.$inferSelect;
 export type Application = typeof applications.$inferSelect;
 export type AppEvent = typeof events.$inferSelect;
+
+/** บริษัทที่ไม่อยากสมัครอีก */
+export const blacklist = sqliteTable(
+  "blacklist",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    company: text("company").notNull(),
+    companyKey: text("company_key").notNull(), // ชื่อที่ normalize แล้ว (lib/company.ts)
+    reason: text("reason"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [uniqueIndex("blacklist_user_company_idx").on(t.userId, t.companyKey)],
+);
+
+export type BlacklistEntry = typeof blacklist.$inferSelect;

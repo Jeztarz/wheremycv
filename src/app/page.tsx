@@ -7,7 +7,8 @@ import { StatusBadge } from "@/components/ui";
 import { currentUser } from "@/lib/auth";
 import { daysBetween, fmtShort, relDay, todayBkk } from "@/lib/dates";
 import { db, env } from "@/lib/env";
-import { listApplications, listEvents } from "@/lib/queries";
+import { companyKey } from "@/lib/company";
+import { listApplications, listBlacklist, listEvents } from "@/lib/queries";
 import { computeReminders, withFreshActivity, type Reminder } from "@/lib/reminders";
 import { STATUS_META, isStatus } from "@/lib/status";
 
@@ -37,7 +38,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
   const { f = "all", q = "" } = await searchParams;
   const d = db();
   const today = todayBkk();
-  const [apps, evs] = await Promise.all([listApplications(d, user.id), listEvents(d, user.id)]);
+  const [apps, evs, bl] = await Promise.all([listApplications(d, user.id), listEvents(d, user.id), listBlacklist(d, user.id)]);
+  const blockedKeys = new Set(bl.map((b) => b.companyKey));
   const reminders = computeReminders(withFreshActivity(apps, evs, today), evs, user, today);
   const upcoming = reminders.filter((r) => r.kind === "upcoming");
   const waiting: Reminder[] = reminders.filter((r) => r.kind !== "upcoming");
@@ -154,7 +156,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
                     <span className="truncate text-base font-semibold">{a.company}</span>
                     <span className="truncate text-[13px] text-muted">{a.position}</span>
                   </div>
-                  <StatusBadge status={a.status} />
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <StatusBadge status={a.status} />
+                    {blockedKeys.has(companyKey(a.company) || a.company.toLowerCase()) && (
+                      <span className="rounded-[10px] bg-[#FDE7E7] px-2.5 py-0.5 text-[11px] font-semibold text-[#A12828]">Blacklist</span>
+                    )}
+                  </span>
                 </div>
                 <div className="text-xs text-muted">
                   ส่ง {fmtShort(a.appliedOn)} · ผ่านมา {daysBetween(a.appliedOn, today)} วัน

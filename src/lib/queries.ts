@@ -1,5 +1,5 @@
 import { and, asc, desc, eq } from "drizzle-orm";
-import { applications, events } from "@/db/schema";
+import { applications, blacklist, events } from "@/db/schema";
 import { todayBkk } from "./dates";
 import type { DB } from "./env";
 import { deriveStatus } from "./status";
@@ -30,4 +30,8 @@ export async function recomputeApplication(d: DB, userId: string, id: string) {
     .update(applications)
     .set({ status, lastActivityOn, updatedAt: new Date().toISOString() })
     .where(and(eq(applications.id, id), eq(applications.userId, userId)));
+}
+
+export async function listBlacklist(d: DB, userId: string) {
+  return d.select().from(blacklist).where(eq(blacklist.userId, userId)).orderBy(desc(blacklist.createdAt));
 }

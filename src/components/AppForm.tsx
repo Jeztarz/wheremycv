@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Application } from "@/db/schema";
 import { CHANNELS } from "@/lib/status";
+import { CompanyInput, type BlockedCompany, type KnownApp } from "./CompanyInput";
 import { SubmitButton } from "./SubmitButton";
 
 /** ฟอร์มเพิ่ม/แก้ไขการสมัคร — ช่องบังคับแค่ 3 ช่อง ที่เหลือพับไว้ */
@@ -9,30 +10,22 @@ export function AppForm({
   initial,
   today,
   cancelHref,
-  duplicates,
+  known,
+  blocked,
 }: {
   action: (fd: FormData) => Promise<void>;
   initial?: Partial<Application>;
   today: string;
   cancelHref: string;
-  duplicates?: string[];
+  known: KnownApp[];
+  blocked: BlockedCompany[];
 }) {
   const hasExtra = Boolean(
     initial?.jobUrl || initial?.salaryExpected || initial?.salaryOffered || initial?.contactName || initial?.contactEmail || initial?.contactPhone || initial?.note,
   );
   return (
     <form action={action} className="flex flex-col gap-4 px-5 pb-10">
-      <label className="label">
-        ชื่อบริษัท *
-        <input name="company" required maxLength={200} defaultValue={initial?.company} className="field" autoComplete="off" list="known-companies" />
-      </label>
-      {duplicates && duplicates.length > 0 && (
-        <datalist id="known-companies">
-          {duplicates.map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
-      )}
+      <CompanyInput defaultValue={initial?.company} known={known} blocked={blocked} />
       <label className="label">
         ตำแหน่ง *
         <input name="position" required maxLength={200} defaultValue={initial?.position} className="field" />

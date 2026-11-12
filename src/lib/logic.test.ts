@@ -70,3 +70,13 @@ describe("calendar links", () => {
     expect(icsFile({ ...e, time: null })).toContain("DTSTART;VALUE=DATE:20261113");
   });
 });
+
+import { companyKey } from "./company";
+describe("companyKey", () => {
+  it("ตัดคำนำหน้า/ท้ายชื่อบริษัทแล้วเทียบกันได้", () => {
+    expect(companyKey("บริษัท ออโตเมชั่นเซอร์วิส จำกัด")).toBe(companyKey("ออโตเมชั่นเซอร์วิส"));
+    expect(companyKey("บริษัท ไทยฟินเทค จำกัด (มหาชน)")).toBe(companyKey("ไทยฟินเทค"));
+    expect(companyKey("Kiwi Studio Co., Ltd.")).toBe(companyKey("kiwi studio"));
+    expect(companyKey("Kiwi Studio")).not.toBe(companyKey("Kiwi Labs"));
+  });
+});

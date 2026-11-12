@@ -8,18 +8,21 @@ import { BackBar, StatusBadge } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { calEventFor } from "@/lib/cal-event";
 import { googleCalendarUrl } from "@/lib/calendar-links";
-import { fmtDow, relDay, todayBkk } from "@/lib/dates";
+import { fmtDow, fmtLong, relDay, todayBkk } from "@/lib/dates";
 import { db, env } from "@/lib/env";
 import { signIcs } from "@/lib/ics-sign";
-import { getApplication } from "@/lib/queries";
+import { companyKey } from "@/lib/company";
+import { getApplication, listBlacklist } from "@/lib/queries";
 import { EVENT_META, isEventType, sortEvents } from "@/lib/status";
 
 export default async function ApplicationDetail({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const { id } = await params;
-  const found = await getApplication(db(), user.id, id);
+  const d = db();
+  const [found, bl] = await Promise.all([getApplication(d, user.id, id), listBlacklist(d, user.id)]);
   if (!found) notFound();
   const { app } = found;
+  const blocked = bl.find((b) => b.companyKey === (companyKey(app.company) || app.company.toLowerCase()));
   const e = env();
   const today = todayBkk();
   const liffId = e.LIFF_ID ?? null;
@@ -111,6 +114,13 @@ export default async function ApplicationDetail({ params }: { params: Promise<{ 
           </ol>
         </section>
 
+        {blocked ? (
+          <Link href="/blacklist" className="rounded-2xl border border-[#F2C4C4] bg-[#FDE7E7] px-4 py-3 text-[13px] leading-relaxed text-[#7A1F1F]">
+            <b>บริษัทนี้อยู่ใน Blacklist</b> (เพิ่มเมื่อ {fmtLong(blocked.createdAt.slice(0, 10))})
+            {blocked.reason && <span className="block whitespace-pre-line">เหตุผล: {blocked.reason}</span>}
+          </Link>
+        ) : null}
+
         {(contact || app.jobUrl || app.note) && (
           <section className="card px-4 py-1 text-sm">
             {contact && (
@@ -129,6 +139,15 @@ export default async function ApplicationDetail({ params }: { params: Promise<{ 
             )}
             {app.note && <p className="whitespace-pre-line py-3 text-ink-2">{app.note}</p>}
           </section>
+        )}
+
+        {!blocked && (
+          <Link
+            href={`/blacklist?add=${encodeURIComponent(app.company)}&back=${encodeURIComponent(`/apps/${id}`)}`}
+            className="self-center py-2 text-[13px] text-muted underline-offset-2 hover:underline"
+          >
+            ไม่อยากสมัครที่นี่อีก? เพิ่มใน Blacklist
+          </Link>
         )}
       </main>
 
