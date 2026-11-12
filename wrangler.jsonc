@@ -28,6 +28,8 @@
   "vars": {
     "TZ_NAME": "Asia/Bangkok"
   },
+  // ไม่ลบตัวแปรที่ตั้งไว้ใน dashboard ตอน deploy (ค่าจริงทั้งหมดตั้งใน dashboard ไม่อยู่ในไฟล์นี้)
+  "keep_vars": true,
   "observability": {
     "enabled": true
   }
